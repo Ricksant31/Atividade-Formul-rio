@@ -1,0 +1,182 @@
+<html>
+
+<head>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>  
+
+<script type="text/JavaScript">
+    $(document).ready(function() {
+
+        function exportTableToCSV($table, filename) {
+      
+          var $rows = $table.find('tr:has(td)'),
+      
+            // Temporary delimiter characters unlikely to be typed by keyboard
+            // This is to avoid accidentally splitting the actual contents
+            tmpColDelim = String.fromCharCode(11), // vertical tab character
+            tmpRowDelim = String.fromCharCode(0), // null character
+      
+            // actual delimiter characters for CSV format
+            colDelim = '","',
+            rowDelim = '"\r\n"',
+      
+            // Grab text from table into CSV formatted string
+            csv = '"' + $rows.map(function(i, row) {
+              var $row = $(row),
+                $cols = $row.find('td');
+      
+              return $cols.map(function(j, col) {
+                var $col = $(col),
+                  text = $col.text();
+      
+                return text.replace(/"/g, '""'); // escape double quotes
+      
+              }).get().join(tmpColDelim);
+      
+            }).get().join(tmpRowDelim)
+            .split(tmpRowDelim).join(rowDelim)
+            .split(tmpColDelim).join(colDelim) + '"';
+      
+          // Deliberate 'false', see comment below
+          if (false && window.navigator.msSaveBlob) {
+      
+            var blob = new Blob([decodeURIComponent(csv)], {
+              type: 'text/csv;charset=utf8'
+            });
+      
+            // Crashes in IE 10, IE 11 and Microsoft Edge
+            // See MS Edge Issue #10396033
+            // Hence, the deliberate 'false'
+            // This is here just for completeness
+            // Remove the 'false' at your own risk
+            window.navigator.msSaveBlob(blob, filename);
+      
+          } else if (window.Blob && window.URL) {
+            // HTML5 Blob        
+            var blob = new Blob([csv], {
+              type: 'text/csv;charset=utf-8'
+            });
+            var csvUrl = URL.createObjectURL(blob);
+      
+            $(this)
+              .attr({
+                'download': filename,
+                'href': csvUrl
+              });
+          } else {
+            // Data URI
+            var csvData = 'data:application/csv;charset=utf-8,' + encodeURIComponent(csv);
+      
+            $(this)
+              .attr({
+                'download': filename,
+                'href': csvData,
+                'target': '_blank'
+              });
+          }
+        }
+      
+        // This must be a hyperlink
+        $(".export").on('click', function(event) {
+          // CSV
+          var args = [$('#dvData>table'), 'export.csv'];
+      
+          exportTableToCSV.apply(this, args);
+      
+          // If CSV, don't do event.preventDefault() or return false
+          // We actually need this to be a typical hyperlink
+        });
+
+        $(document).ready(function () {
+  
+          // Adiciona um evento de envio ao formulário
+          $("#meuFormulario").submit(function (event) {
+              // Impede o envio padrão do formulário
+              event.preventDefault();
+  
+              // Obtém os valores dos campos nome e idade
+              var nome = $("#nome").val();
+              var idade = $("#idade").val();
+              var nomeMae = $("#nomeMae").val();
+  
+              var tabelaBody = $("#tabela tbody");
+
+              // Cria uma nova linha e adiciona células a ela
+              var novaLinha = $("<tr>")
+                  .append($("<td>").text(nome))
+                  .append($("<td>").text(idade))
+                  .append($("<td>").text(nomeMae));
+  
+              // Adiciona a nova linha ao corpo da tabela
+              tabelaBody.append(novaLinha);
+          });
+      });
+
+      function limparCampo() {
+      // Obtém o elemento de input pelo ID
+      var Enviar = document.getElementById('nome');
+
+      // Limpa o valor do campo
+      Enviar.value = '';
+    }
+      });
+</script>
+<link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+  <center>
+    <div style="border: 1px solid black; padding: 8px; margin: 8px;">
+        <h1>  Econo+ </h1>
+        <h2>Nos ajude a realizar uma pesquisa de perfil financeiro</h2>
+        <h4>A Lei Geral de Proteção de Dados  - nº 13.709, de 14 de agosto de 2018 dispõe sobre o tratamento de dados pessoais, inclusive nos meios digitais, por pessoa natural ou por pessoa jurídica de direito público ou privado, com o objetivo de proteger os direitos fundamentais de liberdade e de privacidade e o livre desenvolvimento da personalidade da pessoa natural.</h4>
+    </div>
+    <hr>
+    <div style="border: 2px solid black; padding: 8px; margin: 8px;">
+             
+  <div onsubmit="limparCampo(); return false;">
+    <form id="meuFormulario">
+      <label for="nome">Se confortavel, informe o seu nome:</label>
+      <input type="text" id="nome" name="nome" >
+  <p></p>
+      <label for="dependentes">Dependentes</label>
+      <input type="number" id="dependentes" name="depentendes" required>
+  <p></p>
+  <fieldset>
+  <legend> Grau de escolaridade:<legend>
+    <label for="serie">Série:</label>
+    <select name="serie" id="serie">
+        <optgroup label="pré-escolar">
+          <option value="infantil">Infantil</option>
+          <option value="fundamental 1">Fundamental 1 ( 1° ao 5° ano)</option>
+          <option value="fundamental 2">Fundamental 2 (6° ao 9°)</option>
+          <option value="ensino medio">Ensino medio incompleto</option>
+          <option value="ensino medio">Ensino medio completo</option>
+          <option value="ensino medio">Ensino Superior</option>
+        </optgroup>
+      </select>
+      </fieldset>
+  <p></p>
+      <button type="submit">Enviar</button>
+  </form>
+  </div>
+
+
+    
+    <div id="dvData">
+      <table id="tabela">
+        <tr>
+          <th>Nome</th>
+          <th>dependentes</th>
+        </tr>
+    
+      </table>
+      <spam/>
+      
+      <a href="#" class="export">Exportar alunos</a>
+    </div>
+    <form onsubmit="limparCampo(); return false;">
+        <label for="meuInput">Digite algo:</label>
+        <input type="text" id="meuInput" name="meuInput">
+        <button type="submit">Enviar</button>
+      </form>
+</body>
